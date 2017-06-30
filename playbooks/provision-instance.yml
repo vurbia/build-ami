@@ -55,7 +55,7 @@
             cidr_ip: 0.0.0.0/0
 
     # Look up the AMI id to use based on a search
-    - name: Look up Ubuntu Precise AMI ID
+    - name: Look up Ubuntu AMI ID
       ec2_ami_find:
         architecture: x86_64
         region: "{{ ec2_region }}"

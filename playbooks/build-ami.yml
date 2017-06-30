@@ -29,7 +29,7 @@
     # of version 2.1.1.0)
     # TODO: handle case where AMI name already exists
     - name: Register AMI from
-      command: aws ec2 register-image
+      command: aws --region {{ ec2_region }} ec2 register-image
                --name '{{ ami_name }}'
                --description '{{ ami_description }}'
                --architecture {{ ami_architecture }}
@@ -52,8 +52,8 @@
           build_user: "{{ ansible_user_id }}"
           build_controller_host: "{{ ansible_hostname }}"
 
-    - fail:
+#    - fail:
 
-    - name: Find local git revision
-      command: git rev-parse HEAD
-      register: local_git_revision
+#    - name: Find local git revision
+#      command: git rev-parse HEAD
+#      register: local_git_revision

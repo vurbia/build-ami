@@ -10,4 +10,4 @@
 
 cd $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-ansible-playbook playbooks/vyos-build-ami.yml -i hosts --private-key=playbooks/files/ssh-keys/vyos-build-ami.pem $@
+ansible-playbook playbooks/vyos-build-ami.yml -i hosts $@
