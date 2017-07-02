@@ -33,9 +33,77 @@
       ignore_errors: True
 
 # # VPC
-    - name: Delete VPC
-      ec2_vpc:
+    - name: Grab VPC ID
+      ec2_vpc_net_facts:
+        region: "{{ ec2_region }}"
+        filters:
+          "tag:Name": "vyos"
+          "tag:Type": "vyos"
+      register: vpc
+
+    - name: Grab VPC subnet within VPCs
+      ec2_vpc_subnet_facts:
+        region: "{{ ec2_region }}"
+        filters:
+          vpc-id: "{{ item.id }}"
+      with_items: "{{ vpc.vpcs }}"
+      register: subnets
+
+    - name: Grab routing tables for VPSs
+      ec2_vpc_route_table_facts:
+        region: "{{ ec2_region }}"
+        filters:
+          vpc-id: "{{ item.id }}"
+          "tag:name": vyos
+      with_items: "{{ vpc.vpcs }}"
+      register: route_tables
+
+    - name: Remove subnets
+      ec2_vpc_subnet:
         state: absent
+        region: "{{ ec2_region }}"
+        vpc_id: "{{ item.1.vpc_id }}"
+        cidr: "{{ item.1.cidr_block }}"
+      when: item.1.id|d(false)
+      with_subelements:
+        - "{{ subnets.results }}"
+        - subnets
+      ignore_errors: True
+
+    - name: Remove routing tables from temporary VPCs
+      ec2_vpc_route_table:
+        state: absent
+        region: "{{ ec2_region }}"
+        vpc_id: "{{ item.1.vpc_id }}"
+        route_table_id: "{{ item.1.id }}"
+        lookup: "id"
+      when: item.1.id|d(false)
+      with_subelements:
+        - "{{ route_tables.results }}"
+        - route_tables
+      ignore_errors: True
+
+    - name: Remove DHCP options
+      ec2_vpc_dhcp_options:
+        state: absent
+        #vpc_id: "{{ item.id }}"
+        region: "{{ ec2_region }}"
+        dhcp_options_id: "{{item.dhcp_options_id }}"
+      with_items: "{{ vpc.vpcs }}"
+      ignore_errors: True
+
+    - name: Remove internet gateway
+      ec2_vpc_igw:
+        state: absent
+        vpc_id: "{{ item.id }}"
+        region: "{{ ec2_region }}"
+      with_items: "{{ vpc.vpcs }}"
+      ignore_errors: True
+
+    - name: Delete VPC
+      ec2_vpc_net:
+        state: absent
+        name: vyos
         cidr_block: 10.0.0.0/16
         resource_tags:
           Type: vyos

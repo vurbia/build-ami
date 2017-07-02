@@ -4,5 +4,6 @@
   gather_facts: False
 
   tasks:
-    - fail: msg="Assert that an ISO is specified"
+    - name: Checking if ISO is specified
+      fail: msg="Assert that an ISO is specified"
       when: iso == ""
